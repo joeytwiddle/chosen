@@ -399,25 +399,34 @@ class Chosen extends AbstractChosen
     if @search_field.val() is @default_text then "" else $('<div/>').text($.trim(@search_field.val())).html()
 
   winnow_results_set_highlight: ->
+    if !@disable_highlight_first_option
+      this.highlight_first()
+
+  highlight_first: ->
     selected_results = if not @is_multiple then @search_results.find(".result-selected.active-result") else []
     do_high = if selected_results.length then selected_results.first() else @search_results.find(".active-result").first()
 
     this.result_do_highlight do_high if do_high?
 
   no_results: (terms) ->
-    no_results_html = $('<li class="no-results">' + @results_none_found + ' "<span></span>"</li>')
-    no_results_html.find("span").first().html(terms)
+    if !@disable_no_results_message
+      no_results_html = $('<li class="no-results">' + @results_none_found + ' "<span></span>"</li>')
+      no_results_html.find("span").first().html(terms)
 
-    @search_results.append no_results_html
+      @search_results.append no_results_html
+
     @form_field_jq.trigger("chosen:no_results", {chosen:this})
 
   no_results_clear: ->
     @search_results.find(".no-results").remove()
 
   keydown_arrow: ->
-    if @results_showing and @result_highlight
-      next_sib = @result_highlight.nextAll("li.active-result").first()
-      this.result_do_highlight next_sib if next_sib
+    if @results_showing
+      if @result_highlight
+        next_sib = @result_highlight.nextAll("li.active-result").first()
+        this.result_do_highlight next_sib if next_sib
+      else
+        this.highlight_first()
     else
       this.results_show()
 
